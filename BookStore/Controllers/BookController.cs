@@ -1,15 +1,12 @@
-﻿using BookStore.BookOperations.CreateBook;
+﻿using AutoMapper;
+using BookStore.BookOperations.CreateBook;
 using BookStore.BookOperations.DeleteBook;
 using BookStore.BookOperations.GetBookDetail;
 using BookStore.BookOperations.GetBooks;
 using BookStore.BookOperations.UpdateBook;
 using BookStore.DBOperations;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using static BookStore.BookOperations.CreateBook.CreateBookCommand;
 using static BookStore.BookOperations.GetBookDetail.GetBookDetailQuery;
 using static BookStore.BookOperations.UpdateBook.UpdateBookCommand;
@@ -22,15 +19,18 @@ namespace BookStore.Controllers
     {
         private readonly BookStoreDbContext _context;
 
-        public BookController (BookStoreDbContext context)
+        private readonly IMapper _mapper;
+
+        public BookController(BookStoreDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public IActionResult GetBooks()
         {
-            GetBooksQuery query = new GetBooksQuery(_context);
+            GetBooksQuery query = new GetBooksQuery(_context, _mapper);
             var result = query.Handle();
             return Ok(result);
         }
@@ -42,7 +42,7 @@ namespace BookStore.Controllers
 
             try
             {
-                GetBookDetailQuery query = new GetBookDetailQuery(_context);
+                GetBookDetailQuery query = new GetBookDetailQuery(_context, _mapper);
                 query.BookId = id;
                 result = query.Handle();
             }
@@ -57,7 +57,7 @@ namespace BookStore.Controllers
         [HttpPost]
         public IActionResult AddBook([FromBody] CreateBookModel newBook)
         {
-            CreateBookCommand command = new CreateBookCommand(_context);
+            CreateBookCommand command = new CreateBookCommand(_context, _mapper);
             try
             {
                 command.Model = newBook;
